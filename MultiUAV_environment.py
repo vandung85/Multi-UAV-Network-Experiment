@@ -5,6 +5,8 @@ from MultiUAV_scenario import Scenario as sc
 import time
 import matplotlib.pyplot as plt
 
+np.set_printoptions(suppress=True)
+
 
 class MultiUAVEnv(gym.Env):
     metadata = {
@@ -152,54 +154,55 @@ class MultiUAVEnv(gym.Env):
         return action_n
 
 if __name__ == '__main__':
+    sc = sc()
+    env = MultiUAVEnv(sc)
+    env.render()
+    for i in range(len(env.world.landmarks.values())):
+        print("地标位置：")
+        print(env.world.landmarks[str(i)].state.pos)
+    while True:
+        print('----------------------')
+        action_n = env.random_action()
+        o, r, done, _ = env.step(action_n)
+        if done:
+            break
+        for uav in env.world.UAVs:
+            print("当前无人机{}位置：".format(uav.id))
+            print(uav.state.pos)
+            print("当前无人机关联用户：")
+            print(uav.associator)
+            for i in uav.associator:
+                print(env.world.landmarks[str(i)].state.pos)
+
+        print(o)
+        print("当前系统的总吞吐量：{}".format(r))
+        env.render()
+        time.sleep(5)
     # sc = sc()
     # env = MultiUAVEnv(sc)
     # env.reset()
-    # env.render()
-    # for i in range(len(env.world.landmarks.values())):
-    #     print("地标位置：")
-    #     print(env.world.landmarks[str(i)].state.pos)
+    # capacity = 0
+    # energy = []
+    # capacity_list = []
     # while True:
-    #     print('----------------------')
     #     action_n = env.random_action()
-    #     o, r, _ = env.step(action_n)
-    #     for uav in env.world.UAVs:
-    #         print("当前无人机{}位置：".format(uav.id))
-    #         print(uav.state.pos)
-    #         print("当前无人机关联用户：")
-    #         print(uav.associator)
-    #         for i in uav.associator:
-    #             print(env.world.landmarks[str(i)].state.pos)
-    #
-    #     print(o)
-    #     print("当前系统的总吞吐量：{}".format(r))
-    #     env.render()
-    #     time.sleep(5)
-    sc = sc()
-    env = MultiUAVEnv(sc)
-    env.reset()
-    capacity = 0
-    energy = []
-    capacity_list = []
-    while True:
-        action_n = env.random_action()
-        print(action_n)
-        o, r, done, _ = env.step(action_n)
-        capacity += r
-        if done:
-            break
-    for uav in env.world.UAVs:
-        energy.append(uav.state.energy)
-    for landmark in env.world.landmarks.values():
-        capacity_list.append(landmark.sum_throughput)
-    sum_capacity = np.sum(np.array(capacity_list))
-    print('执行回合数:{}'.format(env.world.t))
-    print('总吞吐量:{}'.format(sum_capacity))
-    print('剩余能量：')
-    print(energy)
-    x = [i for i in range(env.world.num_landmarks)]
-    plt.figure()
-    plt.plot(x, capacity_list)
-    plt.xlabel('user_id')
-    plt.ylabel('data_volume')
-    plt.show()
+    #     print(action_n)
+    #     o, r, done, _ = env.step(action_n)
+    #     capacity += r
+    #     if done:
+    #         break
+    # for uav in env.world.UAVs:
+    #     energy.append(uav.state.energy)
+    # for landmark in env.world.landmarks.values():
+    #     capacity_list.append(landmark.sum_throughput)
+    # sum_capacity = np.sum(np.array(capacity_list))
+    # print('执行回合数:{}'.format(env.world.t))
+    # print('总吞吐量:{}'.format(sum_capacity))
+    # print('剩余能量：')
+    # print(energy)
+    # x = [i for i in range(env.world.num_landmarks)]
+    # plt.figure()
+    # plt.plot(x, capacity_list)
+    # plt.xlabel('user_id')
+    # plt.ylabel('data_volume')
+    # plt.show()

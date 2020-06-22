@@ -49,6 +49,10 @@ def test_probability():
     eta = 57
     probability_los = float(1 / (1 + A * np.exp(-B * (eta - A))))
     print(probability_los)
+
+
 if __name__ == '__main__':
-    a = 1.6e5
-    print(a)
+    a = np.array([True, True])
+    b = np.array([2, 3])
+    c = np.multiply(~a, b)
+    print(~c)

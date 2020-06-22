@@ -33,8 +33,8 @@ NLoS = 10**(math.log(NLoS/10, 10))
 class Scenario:
     def make_world(self):
         world = World()
-        world.num_UAVs = 3
-        world.num_landmarks = 100
+        world.num_UAVs = 2
+        world.num_landmarks = 30
         world.UAVs = [UAV() for i in range(world.num_UAVs)]
         world.association = []
         world.probability_LoS = 1/(1+A)
@@ -58,17 +58,19 @@ class Scenario:
             landmark.name = 'landmark %d'.format(i)
             landmark.id = i
             landmark.size = 10
-        # self.reset_world(world)
+        self.reset_world(world)
         return world
 
     def reset_world(self, world):
         # world时隙初始化
         world.t = 0
-        # 位置初始化
+        # 位置初始化,设置随机参数
+        np.random.seed(666)
+        landmarks_position = np.random.uniform(0, 1000, (len(world.landmarks), 2))
         for uav in world.UAVs:
             uav.state.pos = np.random.uniform(0, 1000, world.dim_p)
-        for landmark in world.landmarks.values():
-            landmark.state.pos = np.random.uniform(0, 1000, world.dim_p)
+        for i, landmark in enumerate(world.landmarks.values()):
+            landmark.state.pos = landmarks_position[i]
         # 能耗初始化
         for uav in world.UAVs:
             uav.state.energy = Energy
@@ -82,12 +84,13 @@ class Scenario:
     def observation(self, world, uav):
         # 覆盖范围/观测范围
         coverage = 100
-        obs = []
+        obs_position = []
         for uav in world.UAVs:
-            obs.append(uav.state.pos)
+            obs_position.append(uav.state.pos)
+        obs_weight = []
         for landmark in world.landmarks.values():
-            obs.append(landmark.avg_dataRate)
-        return obs
+            obs_weight.append(landmark.weight)
+        return np.concatenate((np.concatenate(obs_position), np.array(obs_weight)))
 
     def step(self, world):
         # 时隙自增
