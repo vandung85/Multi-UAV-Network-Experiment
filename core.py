@@ -56,7 +56,7 @@ class UAV(Entity):
         self.height = 50
         self.max_distance = 200
         self.coverage = 100
-        self.maxServiceNum = 3
+        self.maxServiceNum = 5
         self.associator = [] # 关联服务用户列表
 
 
@@ -70,6 +70,8 @@ class World:
         self.length = 1000
         self.width = 1000
         self.t = 0 # 时隙
+        self.num_UAVs = 0
+        self.num_landmarks = 0
 
     @property  # 装饰器，将函数改为可以直接调用的变量
     def entities(self):

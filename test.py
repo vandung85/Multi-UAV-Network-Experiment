@@ -2,25 +2,36 @@ import gym
 import sys
 import math
 import numpy as np
+import torch
 
 def test_dataRate():
-    f = 2e9
+    f = 2
     d = 100
     c = 3e8
-    LoS = 2  # 对应3dB
-    B = 2e6  # 2MHz
+    LoS = 3  # 单位dB
+    NLoS = 23  # 单位dB
+    B = 4  # 4MHz
     noise_power = 1e-13
     p_tr = 1
-
-    # 计算信道容量
-    pathLoss = LoS * ((4 * math.pi * f * d) / c)**2
-    print(pathLoss)
-    dB = 10 * math.log(pathLoss, 10)
-    print(dB)
-    R = B * math.log(1 + (p_tr / pathLoss) / noise_power, 2)
-    print(R)
-    R = R / 1e6
-    print(R)  # 100m约为30多Mbps
+    LoS = 10 ** (math.log(LoS / 10, 10))
+    NLoS = 10 ** (math.log(NLoS / 10, 10))
+    H = 100
+    r = 0
+    probability = test_probability(H, r)
+    distance = math.sqrt(H**2 + r**2)
+    pathLoss_LoS = LoS * (4 * math.pi * f * 1e9 * distance / c) ** 2
+    pathLoss_NLoS = NLoS * (4 * math.pi * f * 1e9 * distance / c) ** 2
+    pathLoss = probability * pathLoss_LoS + (1 - probability) * pathLoss_NLoS
+    capacity = B * math.log(1 + p_tr * (1 / pathLoss) / noise_power, 2)
+    print('{}MBps'.format(capacity))
+    # pathLoss = LoS * ((4 * math.pi * f * d) / c)**2
+    # print(pathLoss)
+    # dB = 10 * math.log(pathLoss, 10)
+    # print(dB)
+    # R = B * math.log(1 + (p_tr / pathLoss) / noise_power, 2)
+    # print(R)
+    # R = R / 1e6
+    # print(R)  # 100m约为30多Mbps
 
 def test_energy():
     V = 25
@@ -43,16 +54,19 @@ def test_energy():
     sum = part_1 + part_2 + part_3
     print(sum)
 
-def test_probability():
+def test_probability(H, r):  # H表示无人机飞行高度,r表示无人机和用户间的水平距离。
     A = 12.08  # 环境参数a
     B = 0.11  # 环境参数b
-    eta = 57
+    eta = 0
+    if r == 0:
+        eta = (180 / math.pi) * math.pi / 2  # 单位是°
+    else:
+        eta = (180 / math.pi) * np.arctan(H / r)
     probability_los = float(1 / (1 + A * np.exp(-B * (eta - A))))
-    print(probability_los)
+    # print(probability_los)
+    return probability_los
+
 
 
 if __name__ == '__main__':
-    a = np.array([True, True])
-    b = np.array([2, 3])
-    c = np.multiply(~a, b)
-    print(~c)
+    test_dataRate()

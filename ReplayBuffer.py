@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class ReplayBuffer(object):
     def __init__(self, size):
         self._storage = []
@@ -17,7 +18,7 @@ class ReplayBuffer(object):
     def add(self, obs_t, action, reward, obs_tp1, done):
         data = (obs_t, action, reward, obs_tp1, done)  # 小括号代表元组Tuple
         if self._next_idx >= len(self._storage):
-            self.add(data)
+            self._storage.append(data)
         else:
             self._storage[self._next_idx] = data
         self._next_idx = (self._next_idx + 1) % self._maxsize
@@ -27,17 +28,17 @@ class ReplayBuffer(object):
         obses_t, actions, rewards, obses_tp1, dones = [], [], [], [], []
         for i in idxes:
             data = self._storage[i]
-            obs_t, action, reward, obses_tp1, done = data
+            obs_t, action, reward, obs_tp1, done = data
             obses_t.append(np.concatenate(obs_t[:]))  # 旧状态
             actions.append(action)
-            rewards.append(reward)  # 目前所有uav用的是一个共享reward，所以不做区分
-            obses_tp1.append(np.concatenate(obses_tp1[:]))  # 新状态
+            rewards.append(reward[agent_idx])
+            obses_tp1.append(np.concatenate(obs_tp1[:]))  # 新状态
             dones.append(done)
         return np.array(obses_t), np.array(actions), np.array(rewards), np.array(obses_tp1), np.array(dones)
 
     # 随机选择
     def make_index(self, batch_size):
-        return [random.uniform(0, len(self._storage)-1) for _ in range(batch_size)]
+        return [random.randint(0, len(self._storage)-1) for _ in range(batch_size)]
 
     # 不再是随机选择，而是选择最新填入的样本
     def make_latest_index(self, batch_size):
@@ -54,3 +55,6 @@ class ReplayBuffer(object):
         else:
             idxes = range(0, len(self._storage))
         return self._encode_sample(idxes, agent_idx)
+
+if __name__ == '__main__':
+    pass
