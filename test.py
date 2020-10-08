@@ -2,7 +2,10 @@ import gym
 import sys
 import math
 import numpy as np
+import pickle
 import torch
+import matplotlib.pyplot as plt
+import torch.nn.functional as F
 
 def test_dataRate():
     f = 2
@@ -69,4 +72,44 @@ def test_probability(H, r):  # H表示无人机飞行高度,r表示无人机和�
 
 
 if __name__ == '__main__':
-    test_dataRate()
+
+    # with open("reward.txt", 'rb') as f:
+    #     data = pickle.load(f)
+    #     x = [i for i in range(100000)]
+    #     plt.plot(x, data[:100000])
+    #     plt.xlabel('epoch')
+    #     plt.ylabel('reward')
+    #     plt.show()
+    # with open("duration.txt", 'rb') as f:
+    #     data = pickle.load(f)
+    #     x = [i for i in range(100000)]
+    #     plt.plot(x, data[:100000])
+    #     plt.xlabel('epoch')
+    #     plt.ylabel('dutation')
+    #     plt.show()
+    # # with open("fairness.txt", 'rb') as f:
+    # #     data = pickle.load(f)
+    # #     print(data)
+
+
+
+
+
+
+
+    # name_list = ['1000*1000', '500*500']
+    # # num_list = [567.81, 672.32]
+    # # num_list1 = [413.21, 532.12]
+    # num_list = [0.2122, 0.2312]
+    # num_list1 = [0.1892, 0.2331]
+    # x = list(range(len(num_list)))
+    # total_width, n = 0.5, 2
+    # width = total_width / n
+    #
+    # plt.bar(x, num_list, width=width, label='MADDPG', fc='y')
+    # for i in range(len(x)):
+    #     x[i] = x[i] + width
+    # plt.bar(x, num_list1, width=width, label='Random', tick_label=name_list, fc='r')
+    # plt.ylim(0, 1)
+    # plt.legend()
+    # plt.show()

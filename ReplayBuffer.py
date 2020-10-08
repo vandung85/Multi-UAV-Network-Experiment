@@ -33,7 +33,7 @@ class ReplayBuffer(object):
             actions.append(action)
             rewards.append(reward[agent_idx])
             obses_tp1.append(np.concatenate(obs_tp1[:]))  # 新状态
-            dones.append(done)
+            dones.append(done[agent_idx])
         return np.array(obses_t), np.array(actions), np.array(rewards), np.array(obses_tp1), np.array(dones)
 
     # 随机选择

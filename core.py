@@ -1,5 +1,6 @@
 import numpy as np
 
+Range = 500
 
 class State:
     def __init__(self):
@@ -21,8 +22,8 @@ class UAVState(State):
 
 class Action:
     def __init__(self):
-        self.direction = None
-        self.distance = None
+        self.distance_x = None
+        self.distance_y = None
 
 
 class Entity:
@@ -54,9 +55,9 @@ class UAV(Entity):
         self.state = UAVState()
         self.action = Action()
         self.height = 50
-        self.max_distance = 200
+        self.max_distance = 50 # 80
         self.coverage = 100
-        self.maxServiceNum = 5
+        # self.maxServiceNum = 3
         self.associator = [] # 关联服务用户列表
 
 
@@ -67,13 +68,13 @@ class World:
         self.landmarks = {}
         self.dim_p = 2
         self.dt = 0.1  # simulation timestep
-        self.length = 1000
-        self.width = 1000
+        self.length = Range
+        self.width = Range
         self.t = 0 # 时隙
         self.num_UAVs = 0
         self.num_landmarks = 0
 
-    @property  # 装饰器，将函数改为可以直接调用的变量
-    def entities(self):
-        return self.UAVs + self.landmarks
+    # @property  # 装饰器，将函数改为可以直接调用的变量
+    # def entities(self):
+    #     return self.UAVs + self.landmarks
 

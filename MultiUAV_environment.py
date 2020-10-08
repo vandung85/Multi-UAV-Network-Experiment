@@ -8,6 +8,7 @@ import torch
 
 np.set_printoptions(suppress=True)
 
+Range = 500
 
 class MultiUAVEnv(gym.Env):
     metadata = {
@@ -24,7 +25,7 @@ class MultiUAVEnv(gym.Env):
         for uav in self.world.UAVs:
             # act_space
             total_action_space = []
-            action_space = spaces.Box(low=0, high=1, shape=(2,), dtype=np.float32) # 动作空间，值域0到1，维度2(方向和距离)
+            action_space = spaces.Box(low=-1, high=1, shape=(2,), dtype=np.float32) # 动作空间，值域0到1，维度2(方向和距离)
             self.action_space.append(action_space)
             # obs_space
             obs_dim = len(self.sc.observation(self.world, uav))
@@ -42,17 +43,21 @@ class MultiUAVEnv(gym.Env):
             self._set_action(action_n[i], uav, self.action_space[i])
         # 更新状态
         is_out_bound = self.sc.step(self.world)
+        is_out_bound_array = []
+        for tmp in is_out_bound:
+            if tmp:
+                is_out_bound_array.append(-1)
+            else:
+                is_out_bound_array.append(1)
+        is_out_bound_array = np.array(is_out_bound_array)
         # 记录观察
         for uav in self.world.UAVs:
             obs_n.append(self._get_obs(uav))
         # 查看当前环境是否因越界或能量耗尽而结束
-        done = self.sc.get_done(self.world)
-        # if is_out_bound:
-        #     reward = 0
-        # else:
-        #     reward = self.sc.reward(self.world) # 由于是协作关系，共享一个reward
+        done_n = self.sc.get_done(self.world)
         reward = self.sc.reward(self.world)
-        return obs_n, reward, done, info
+        reward = np.multiply(is_out_bound_array, np.array(reward))
+        return obs_n, reward, done_n, info
 
     def _get_obs(self, uav):
         return self.sc.observation(self.world, uav)
@@ -64,8 +69,12 @@ class MultiUAVEnv(gym.Env):
         return self.sc.reward(self.world, uav)
 
     def _set_action(self, action, uav, action_space, time=None):
-        uav.action.direction = action[0]
-        uav.action.distance = action[1]
+        uav.action.distance_x = action[0]
+        uav.action.distance_y = action[1]
+
+    def close(self):
+        if self.viewer:
+            self.viewer.close()
 
     def render(self, mode='human'):
         from gym.envs.classic_control import rendering
@@ -116,12 +125,12 @@ class MultiUAVEnv(gym.Env):
         #         self.services_count += 1
 
         # 新代码 不适用tranform，直接刷新全局组件
-        screen_width = 1000
-        screen_height = 1000
+        screen_width = Range
+        screen_height = Range
         # 如果没有viewer，创建viewer和uav、landmarks
         if self.viewer is None:
             self.viewer = rendering.Viewer(screen_height, screen_width)
-        self.viewer.set_bounds(0, 1000, 0, 1000)
+        self.viewer.set_bounds(0, Range, 0, Range)
         self.viewer.geoms.clear()
         for uav in self.world.UAVs:
             geom = rendering.make_circle(uav.size)
@@ -161,38 +170,44 @@ class MultiUAVEnv(gym.Env):
         return action_n
 
 if __name__ == '__main__':
-    sc = sc()
-    env = MultiUAVEnv(sc)
-    obs = env.reset()
-    print(obs)
-
-    # render绘图场景
     # sc = sc()
     # env = MultiUAVEnv(sc)
-    # # env.render()
     # obs = env.reset()
-    # for i in range(len(env.world.landmarks.values())):
-    #     print("地标位置：")
-    #     print(env.world.landmarks[str(i)].state.pos)
-    # while True:
-    #     print('----------------------')
-    #     action_n = env.random_action()
-    #     o, r, done, _ = env.step(action_n)
-    #     print(len(o))
-    #     if done:
-    #         break
-    #     for uav in env.world.UAVs:
-    #         print("当前无人机{}位置：".format(uav.id))
-    #         print(uav.state.pos)
-    #         print("当前无人机关联用户：")
-    #         print(uav.associator)
-    #         for i in uav.associator:
-    #             print(env.world.landmarks[str(i)].state.pos)
-    #
-    #     print(o)
-    #     print("当前系统的总吞吐量：{}".format(r))
-    #     env.render()
-    #     time.sleep(1)
+    # print(obs)
+
+    # render绘图场景
+    sc = sc()
+    env = MultiUAVEnv(sc)
+    # env.render()
+    obs = env.reset()
+    for i in range(len(env.world.landmarks.values())):
+        print("地标位置：")
+        print(env.world.landmarks[str(i)].state.pos)
+    while True:
+        print('----------------------')
+        action_n = env.random_action()
+        print(action_n)
+        o, r, done, is_out_bound = env.step(action_n)
+        print(o)
+        print(r)
+        # for uav in env.world.UAVs:
+        #     print('[{},{}]'.format(uav.action.distance_x, uav.action.distance_y))
+        # print(is_out_bound)
+        # print(len(o))
+        # if done:
+        #     break
+        # for uav in env.world.UAVs:
+        #     print("当前无人机{}位置：".format(uav.id))
+        #     print(uav.state.pos)
+        #     print("当前无人机关联用户：")
+        #     print(uav.associator)
+        #     for i in uav.associator:
+        #         print(env.world.landmarks[str(i)].state.pos)
+
+        # print(o)
+        print("当前系统的总吞吐量：{}".format(r))
+        env.render()
+        time.sleep(3)
 
     # 随机策略模拟场景
     # sc = sc()
