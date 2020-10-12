@@ -15,19 +15,18 @@ import pickle
 import matplotlib.pyplot as plt
 import random
 
-learning_rate = 0.0001
+learning_rate = 0.001
 learning_start_step = 5000  # 开始训练的游戏步数
 learning_fre = 100
 batch_size = 2000 # 2500
 gamma = 0.9  # 折扣系数
 save_frequency = 1000  # 2000
 save_dir = './models'
-tar_update_fre = 100  # tar网络更新频率
 tao = 0.01
-Num_hidden_1 = 50
-Num_hidden_2 = 20
+Num_hidden_1 = 128
+Num_hidden_2 = 64
 BUFFER_SIZE = 5000
-max_episode = 200000   # 1000
+max_episode = 30000   # 1000
 per_episode_max_len = 200
 max_grad_norm = 0.5
 var = 1
@@ -258,7 +257,7 @@ def train(var):
         mean_agents_r = [round(agent_rewards[idx][-2], 2) for idx in range(env.world.num_UAVs)]
         print(" " * 43 + 'episode reward:{}    agent_rewards:{}'.format(mean_ep_r, mean_agents_r))
 
-        if episode_gone % 5000 == 0:
+        if episode_gone % 500 == 0:
             x = [i for i in range(len(episode_rewards)-1)]
             plt.plot(x, episode_rewards[:-1])
             plt.xlabel('epoch')

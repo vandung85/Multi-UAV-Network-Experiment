@@ -1,0 +1,15 @@
+learning_rate = 0.001
+learning_start_step = 5000  # 开始训练的游戏步数
+learning_fre = 100
+batch_size = 2000 # 2500
+gamma = 0.9  # 折扣系数
+save_frequency = 1000  # 2000
+save_dir = './models'
+tao = 0.01
+Num_hidden_1 = 128
+Num_hidden_2 = 64
+BUFFER_SIZE = 5000
+max_episode = 30000   # 1000
+per_episode_max_len = 200
+max_grad_norm = 0.5
+var = 1

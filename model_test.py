@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 
 per_episode_max_len = 200
-model_name = 'models/2UAVs_18648/'
+model_name = 'models/2UAVs_24012/'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -104,6 +104,7 @@ def model_test():
         # print(rew_n)
         # print(new_obs_n)
         env.render()
+        # time.sleep(0.5)
 
     # game_step = 0
     # for episode_gone in range(1000):

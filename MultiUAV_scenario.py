@@ -72,7 +72,7 @@ class Scenario:
         for i, landmark in enumerate(world.landmarks.values()):
             landmark.state.pos = landmarks_position[i]
             landmark.weight = 1
-            landmark.sum_throughput = 0
+            landmark.sum_throughput = 1
             landmark.avg_dataRate = 0
         for uav in world.UAVs:
             uav.state.pos = np.array([Range / 2, Range / 2])
@@ -82,29 +82,45 @@ class Scenario:
             uav.state.energy = Energy
         self.reset_service(world)
 
-    # 使用全局奖励 or 分开？
+    # 划分奖励
     def reward(self, world):
-        _, reward_list = self.get_sum_capacity(world)
+        capacity_list, reward_list = self.get_sum_capacity(world)
         # capacity_sum = np.sum(capacity_list)
         # reward = capacity_sum
-        reward = []
-        for i in range(world.num_UAVs):
-            reward.append(reward_list[i]/100)  # 归一化奖励
+        # reward = []
+        Jain_index = self.get_Jain_index(world)
+        reward = Jain_index * np.array(capacity_list) / 100  # 归一化
+        # for i in range(world.num_UAVs):
+        #     reward.append(reward_list[i])  # 未归一化奖励
         return reward
+
+    # 计算Jain系数
+    def get_Jain_index(self, world):
+        volumns = []
+        for landmark in world.landmarks.values():
+            volumns.append(landmark.sum_throughput)
+        volumns = np.array(volumns)
+        Jain = np.power(np.sum(volumns), 2) / (len(volumns) * np.sum(np.power(volumns, 2)))
+        return Jain
+
 
     def observation(self, world, uav):
         # 覆盖范围/观测范围
-        obs_position = [uav.state.pos / Range]  # 归一化
+        obs_position = [uav.state.pos / Range]  # 未归一化
         for uav_tmp in world.UAVs:
             if uav is uav_tmp:
                 continue
             else:
-                obs_position.append((uav_tmp.state.pos - uav.state.pos)/Range)
+                obs_position.append((uav_tmp.state.pos - uav.state.pos) / Range)
             # obs_position.append(uav.state.pos)
         obs_weight = []
         for landmark in world.landmarks.values():
-            obs_weight.append(landmark.weight)
-        return np.concatenate((np.concatenate(obs_position), np.array(obs_weight)))
+            # obs_weight.append(landmark.weight)
+            obs_weight.append(landmark.sum_throughput)
+        obs_weight_norm = []
+        for obs in obs_weight:
+            obs_weight_norm.append(obs / max(obs_weight))
+        return np.concatenate((np.concatenate(obs_position), np.array(obs_weight_norm)))
 
     def step(self, world):
         # 标致位，用来判断UAV此次运动是否越界
@@ -129,7 +145,7 @@ class Scenario:
 
             # uav统计覆盖范围内的地面用户数量
             for landmark in world.landmarks.values():
-                if landmark.connected is False and np.sqrt(np.sum((landmark.state.pos - uav.state.pos) ** 2)) <= 40:
+                if landmark.connected is False and np.sqrt(np.sum((landmark.state.pos - uav.state.pos) ** 2)) <= 60:
                     world.landmarks[str(landmark.id)].connected = True
                     # world.landmarks[str(landmark.id)].sum_throughput += self.get_capacity(uav, landmark)
                     uav.associator.append(landmark.id)
